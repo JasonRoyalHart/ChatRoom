@@ -34,6 +34,7 @@ namespace ChatRoomServer
                 AddToClientDictionary(name, stream);
                 Console.WriteLine("{0} has joined the chat room.", name);
                 messageQueue.Enqueue(name + " has joined the chat room.\n");
+                Broadcast();
 
             }
 
@@ -60,9 +61,11 @@ namespace ChatRoomServer
                 {
                     foreach (var entry in clients.ToList())
                     {
+                        Array.Clear(message, 0, message.Length);
                         entry.Value.Read(message, 0, message.Length);
                         messageString = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
                         AddMessageToQueue(entry.Key, messageString);
+                        Broadcast();
                     }
                 }
             }
@@ -101,7 +104,7 @@ namespace ChatRoomServer
         }
         public void Broadcast()
         {
-            while (true)
+            while (messageQueue.Count() > 0)
             {
                 string message = GetMessageFromQueue();
                 PublishMessage(message);
@@ -119,11 +122,8 @@ namespace ChatRoomServer
         public void PublishMessage(string message)
         {
             byte[] byteMessage = System.Text.Encoding.ASCII.GetBytes(message);
-            //            Console.WriteLine("Size of clients: " + clients.Count());
-            //DisplayClients();
-                foreach (var entry in clients.Values.ToList())
-                {
-//                Console.WriteLine("writing a message");
+            foreach (var entry in clients.Values.ToList())
+            {
                 entry.Write(byteMessage, 0, byteMessage.Length);
             }
         }        

@@ -19,9 +19,9 @@ namespace ChatRoomClient
             NetworkStream stream = client.Connect();
 
             client.GetName(stream);
-
-            Task.Run(() => client.DisplayMessages(stream));
-            Task.Run(() => client.SendInput(stream));
+            Parallel.Invoke(() => client.DisplayMessages(stream), () => client.SendInput(stream));
+//            Task.Run(() => client.DisplayMessages(stream));
+//            Task.Run(() => client.SendInput(stream));
             while (true) { }
         }
     }
