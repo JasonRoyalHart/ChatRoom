@@ -48,7 +48,7 @@ namespace ChatRoomServer
             byte[] name = new Byte[256];
             stream.Read(name, 0, name.Length);
             string responseData = System.Text.Encoding.ASCII.GetString(name).TrimEnd('\0');
-            stream.Write(message, 0, message.Length);
+//            stream.Write(message, 0, message.Length);
             return responseData;
         }
         public void ListenForMessages(TcpListener listener)
@@ -74,6 +74,7 @@ namespace ChatRoomServer
         {
             NetworkStream stream = client.GetStream();
             byte[] message = new Byte[255];
+            stream.ReadTimeout = 10;
             stream.Read(message, 0, message.Length);
             string responseData = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
             return responseData;

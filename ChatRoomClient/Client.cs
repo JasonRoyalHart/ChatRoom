@@ -40,6 +40,7 @@ namespace ChatRoomClient
         {
 //            Console.WriteLine("In GetMessage.");
             Byte[] data = new Byte[256];
+//            stream.ReadTimeout = 10;
             Int32 bytes = stream.Read(data, 0, data.Length);
             string responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
             return responseData;
