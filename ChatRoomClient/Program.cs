@@ -14,14 +14,11 @@ namespace ChatRoomClient
     {
         static void Main(string[] args)
         {
-            Client client = new Client();
-            
+            Client client = new Client();            
             NetworkStream stream = client.Connect();
-
             client.GetName(stream);
-            Parallel.Invoke(() => client.DisplayMessages(stream), () => client.SendInput(stream));
-//            Task.Run(() => client.DisplayMessages(stream));
-//            Task.Run(() => client.SendInput(stream));
+            Task.Run(() => client.DisplayMessages(stream));
+            Task.Run(() => client.SendInput(stream));
             while (true) { }
         }
     }

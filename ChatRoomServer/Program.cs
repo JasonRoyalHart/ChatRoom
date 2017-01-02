@@ -16,8 +16,7 @@ namespace ChatRoomServer
         {
             Server server = new Server();
             TcpListener listener = server.CreateServer();
-            Parallel.Invoke(() => server.ListenForConnections(listener), () => server.ListenForMessages(listener));
-//            Task.Run(() => server.Broadcast());
+            Task.Run(() => server.ListenForConnections(listener));
             Console.WriteLine("Press any key to exit.");
             Console.ReadKey();
 

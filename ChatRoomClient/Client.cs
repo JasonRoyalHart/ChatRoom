@@ -31,18 +31,15 @@ namespace ChatRoomClient
         {
             while (true)
             {
-//                Console.WriteLine("In DisplayMessages");
                 string message = GetMessage(stream);
                 Console.WriteLine(message);
             }
         }
         public string GetMessage(NetworkStream stream)
         {
-//            Console.WriteLine("In GetMessage.");
-            Byte[] data = new Byte[256];
-//            stream.ReadTimeout = 10;
-            Int32 bytes = stream.Read(data, 0, data.Length);
-            string responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+            Byte[] message = new Byte[256];
+            Int32 bytes = stream.Read(message, 0, message.Length);
+            string responseData = System.Text.Encoding.ASCII.GetString(message, 0, message.Length);
             return responseData;
         }
         public void SendInput(NetworkStream stream)

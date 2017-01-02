@@ -14,7 +14,8 @@ namespace ChatRoomServer
     class Server
     {
         public Dictionary<string, NetworkStream> clients = new Dictionary<string, NetworkStream>();
-        public Queue<string> messageQueue = new Queue<string>();
+        public Queue<Message> messageQueue = new Queue<Message>();
+        public List<string> log = new List<string>();
 
         public TcpListener CreateServer()
         {
@@ -32,9 +33,14 @@ namespace ChatRoomServer
                 NetworkStream stream = client.GetStream();
                 string name = GetName(client);
                 AddToClientDictionary(name, stream);
-                Console.WriteLine("{0} has joined the chat room.", name);
-                messageQueue.Enqueue(name + " has joined the chat room.\n");
+                Log(name + " has joined the chat room.");
+                Message entryMessage = new Message();
+                entryMessage.user = name;
+                entryMessage.message = name + " has joined the chat room.";
+                messageQueue.Enqueue(entryMessage);
                 Broadcast();
+                Task.Run(() => ListenForMessages(server, stream, name));
+
 
             }
 
@@ -48,52 +54,50 @@ namespace ChatRoomServer
             byte[] name = new Byte[256];
             stream.Read(name, 0, name.Length);
             string responseData = System.Text.Encoding.ASCII.GetString(name).TrimEnd('\0');
-//            stream.Write(message, 0, message.Length);
             return responseData;
         }
-        public void ListenForMessages(TcpListener listener)
+        public void ListenForMessages(TcpListener listener, NetworkStream stream, string name)
         {
             byte[] message = new Byte[256];
             string messageString = "";
             while (true)
             {
-                if (clients.Count != 0)
+                Message messageWithUser = new Message();
+                Array.Clear(message, 0, message.Length);
+                stream.Read(message, 0, message.Length);
+                messageString = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
+                messageWithUser.user = name;
+                messageWithUser.message = messageString;
+                if (messageWithUser.message[0].ToString() == "@")
                 {
-                    foreach (var entry in clients.ToList())
-                    {
-                        Array.Clear(message, 0, message.Length);
-                        entry.Value.Read(message, 0, message.Length);
-                        messageString = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
-                        AddMessageToQueue(entry.Key, messageString);
-                        Broadcast();
-                    }
+                    messageWithUser.privateUser = messageWithUser.FindPrivateUser();
                 }
+                AddMessageToQueue(messageWithUser);
+                Broadcast();
+
             }
         }
         public string GetMessage(TcpListener server, TcpClient client)
         {
             NetworkStream stream = client.GetStream();
-            byte[] message = new Byte[255];
-            stream.ReadTimeout = 10;
+            byte[] message = new Byte[256];
             stream.Read(message, 0, message.Length);
-            string responseData = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
-            return responseData;
+            string convertedMessage = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
+            return convertedMessage;
         }
         public void AddToClientDictionary(string name, NetworkStream stream)
         {
             clients[name] = stream;
         }
-        public void AddMessageToQueue(string user, string message)
+        public void AddMessageToQueue(Message message)
         {
-            string queueMessage = user + ": " + message;
-            messageQueue.Enqueue(queueMessage);
-            Console.WriteLine(queueMessage + " added to queue.");
+            messageQueue.Enqueue(message);
         }
         public void DisplayQueue()
         {
-            foreach (string message in messageQueue)
+            foreach (Message message in messageQueue)
             {
-                Console.WriteLine(message);
+                Console.WriteLine(message.GetMessage());
             }
         }
         public void DisplayClients()
@@ -107,26 +111,42 @@ namespace ChatRoomServer
         {
             while (messageQueue.Count() > 0)
             {
-                string message = GetMessageFromQueue();
+                Message message = GetMessageFromQueue();
+                Log(message.GetMessage());
                 PublishMessage(message);
             }
         }
-        public string GetMessageFromQueue()
+        public Message GetMessageFromQueue()
         {
-            string message = "";
+            Message message = new Message();
             if (messageQueue.Count != 0)
             {
                 message = messageQueue.Dequeue();
             }
             return message;
         }
-        public void PublishMessage(string message)
+        public void PublishMessage(Message message)
         {
-            byte[] byteMessage = System.Text.Encoding.ASCII.GetBytes(message);
-            foreach (var entry in clients.Values.ToList())
+            byte[] byteMessage = System.Text.Encoding.ASCII.GetBytes(message.GetMessage());
+            foreach (var entry in clients.ToList())
             {
-                entry.Write(byteMessage, 0, byteMessage.Length);
+                if (message.privateUser != "")
+                {
+                    if (entry.Key == message.privateUser)
+                    {
+                        entry.Value.Write(byteMessage, 0, byteMessage.Length);
+                    }
+                }
+                else
+                {
+                    entry.Value.Write(byteMessage, 0, byteMessage.Length);
+                }
             }
+        }
+        public void Log(string message)
+        {
+            log.Add(message);
+
         }        
     }
 }
