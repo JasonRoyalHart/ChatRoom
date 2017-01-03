@@ -17,7 +17,7 @@ namespace ChatRoomServer
         {
             privateUser = "";
         }
-
+        
         public string GetMessage()
         {
             return user + ": " + message;

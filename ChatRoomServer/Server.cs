@@ -66,6 +66,7 @@ namespace ChatRoomServer
                 Array.Clear(message, 0, message.Length);
                 stream.Read(message, 0, message.Length);
                 messageString = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
+                Console.WriteLine("Recieved {0}", messageString);
                 messageWithUser.user = name;
                 messageWithUser.message = messageString;
                 if (messageWithUser.message[0].ToString() == "@")
@@ -132,7 +133,7 @@ namespace ChatRoomServer
             {
                 if (message.privateUser != "")
                 {
-                    if (entry.Key == message.privateUser)
+                    if (entry.Key == message.privateUser || entry.Key == message.user)
                     {
                         entry.Value.Write(byteMessage, 0, byteMessage.Length);
                     }

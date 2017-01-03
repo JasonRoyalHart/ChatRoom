@@ -39,7 +39,7 @@ namespace ChatRoomClient
         {
             Byte[] message = new Byte[256];
             Int32 bytes = stream.Read(message, 0, message.Length);
-            string responseData = System.Text.Encoding.ASCII.GetString(message, 0, message.Length);
+            string responseData = System.Text.Encoding.ASCII.GetString(message, 0, message.Length).TrimEnd('\0');
             return responseData;
         }
         public void SendInput(NetworkStream stream)
