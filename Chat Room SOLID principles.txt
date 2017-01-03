@@ -1,0 +1,9 @@
+Chat Room SOLID principles:
+
+1) Single Responsibility Principle. Each method does one thing and does it well. For example, many of my methods are only one line long, like AddToClientDictionary, AddMessageToQueue, and Log. I could have accomplished the same thing by just having the one-line statement inside of the method that calls these methods, but instead I broke them out into their own methods.
+
+2) Open/Closed principle. I coded this project in such a way so that it can be extended. The functionality of the existing code should not need to be changed, but it can be extended to add new functionality. For example, message is its own class. This allows message to be easily extended without having to change existing code. All that needs to be done is to add to the existing class, without modifying any extra code.
+
+
+
+

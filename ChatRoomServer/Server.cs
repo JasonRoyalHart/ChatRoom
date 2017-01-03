@@ -23,7 +23,7 @@ namespace ChatRoomServer
             server.Start();
             return server;
         }
-        public void ListenForConnections(TcpListener server)
+        public void RunServer(TcpListener server)
         {
             while (true)
             {
