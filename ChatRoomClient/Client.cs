@@ -15,7 +15,7 @@ namespace ChatRoomClient
         public NetworkStream Connect()
         {
             Int32 port = 15000;
-            TcpClient client = new TcpClient("192.168.1.29", port);
+            TcpClient client = new TcpClient("192.168.0.145", port);
             NetworkStream stream = client.GetStream();
             return stream;
         }

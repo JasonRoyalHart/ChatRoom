@@ -14,7 +14,8 @@ namespace ChatRoomServer
     {
         static void Main(string[] args)
         {
-            Server server = new Server();
+            TextLogger logger = new TextLogger();
+            Server server = new Server(logger);
             TcpListener listener = server.CreateServer();
             Task.Run(() => server.RunServer(listener));
             Console.WriteLine("Press any key to exit.");

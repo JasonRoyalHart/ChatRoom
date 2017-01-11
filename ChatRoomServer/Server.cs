@@ -15,11 +15,15 @@ namespace ChatRoomServer
     {
         public Dictionary<string, NetworkStream> clients = new Dictionary<string, NetworkStream>();
         public Queue<Message> messageQueue = new Queue<Message>();
-        public List<string> log = new List<string>();
+        ILogger logger;
 
+        public Server(ILogger logger)
+        {
+            this.logger = logger;
+        }
         public TcpListener CreateServer()
         {
-            TcpListener server = new TcpListener(IPAddress.Parse("192.168.1.29"), 15000);
+            TcpListener server = new TcpListener(IPAddress.Parse("192.168.0.145"), 15000);
             server.Start();
             return server;
         }
@@ -64,17 +68,26 @@ namespace ChatRoomServer
             {
                 Message messageWithUser = new Message();
                 Array.Clear(message, 0, message.Length);
-                stream.Read(message, 0, message.Length);
-                messageString = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
-                Console.WriteLine("Recieved {0}", messageString);
-                messageWithUser.user = name;
-                messageWithUser.message = messageString;
-                if (messageWithUser.message[0].ToString() == "@")
+                try
                 {
-                    messageWithUser.privateUser = messageWithUser.FindPrivateUser();
+                    stream.Read(message, 0, message.Length);
+                    messageString = System.Text.Encoding.ASCII.GetString(message).TrimEnd('\0');
+                    Console.WriteLine("Recieved {0}", messageString);
+                    messageWithUser.user = name;
+                    messageWithUser.message = messageString;
+                    if (messageWithUser.message[0].ToString() == "@")
+                    {
+                        messageWithUser.privateUser = messageWithUser.FindPrivateUser();
+                    }
+                    AddMessageToQueue(messageWithUser);
+                    Broadcast();
                 }
-                AddMessageToQueue(messageWithUser);
-                Broadcast();
+                catch
+                {
+                    Console.WriteLine(name + " has left the chat.");
+                    Log(name + " has left the chat.");
+                    break;
+                }
 
             }
         }
@@ -146,8 +159,7 @@ namespace ChatRoomServer
         }
         public void Log(string message)
         {
-            log.Add(message);
-
+            logger.Write(DateTime.Now.ToString() + ": " + message + Environment.NewLine);
         }        
     }
 }
